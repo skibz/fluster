@@ -13,7 +13,7 @@ fluster({
     }
   },
   workers: {
-    limit: 3,
+    limit: 3, // remove this to use a process per core
     exec: 'worker.js',
     data: {
       somedata: {
