@@ -38,13 +38,9 @@ module.exports = function (opts) {
 
   if (!opts.workers.exec) throw 'missing worker script'
 
-  cluster.setupMaster({
-    exec: opts.workers.exec
-  })
+  cluster.setupMaster({exec: opts.workers.exec})
 
-  if (opts.workers.respawn === false) {
-
-  } else {
+  if (opts.workers.respawn !== false) {
     cluster.on('exit', function (worker, code, signal) {
       cluster.fork(fluster.env).send(backups())
     })
@@ -70,12 +66,9 @@ module.exports = function (opts) {
       workerdataevents.splice(ofindex, 1)
       for (var workerdataevent in workerdataevents) {
         var workerdatacallback = currentworkerdata.on[workerdataevents[workerdataevent]]
-        currentworkerdata.of.on(
-          workerdataevents[workerdataevent],
-          function() {
-            workerdatacallback.apply(workerdatacallback, arguments.concat[send])
-          }
-        )
+        currentworkerdata.of.on(workerdataevents[workerdataevent], function() {
+          workerdatacallback.apply(workerdatacallback, arguments.concat[send])
+        })
       }
       continue
     }
