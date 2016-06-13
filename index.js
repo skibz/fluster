@@ -16,9 +16,7 @@ function clusterbackups() {
     var value = {};
     value[send] = this.send[send].value || null
     return value
-  }, this).filter(function(value) {
-    return value;
-  })
+  }, this)
 }
 
 module.exports = function (opts) {
@@ -57,7 +55,7 @@ module.exports = function (opts) {
   for (var workerdatum in workerdata) {
     var currentworkerdata = opts.workers.data[workerdata[workerdatum]]
 
-    // todo: pause stream then unpause when workers ready
+    // todo: determine if readable stream and pause until workers ready
     if (currentworkerdata.on) {
       var workerdataevents = Object.keys(currentworkerdata.on)
       var ofindex = workerdataevents.indexOf('of')
@@ -95,7 +93,6 @@ module.exports = function (opts) {
       } else {
         fluster.send[workerdata[workerdatum]].value = currentworkerdata.value
       }
-
       continue
     }
   }
