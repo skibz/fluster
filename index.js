@@ -64,12 +64,12 @@ module.exports = function (opts) {
       var ofindex = workerdataevents.indexOf('of')
       if (ofindex === -1) throw 'missing of arg'
       workerdataevents.splice(ofindex, 1)
-      for (var workerdataevent in workerdataevents) {
-        var workerdatacallback = currentworkerdata.on[workerdataevents[workerdataevent]]
-        currentworkerdata.of.on(workerdataevents[workerdataevent], function() {
+      workerdataevents.forEach(function(workerdataevent) {
+        var workerdatacallback = currentworkerdata.on[workerdataevent]
+        currentworkerdata.of.on(workerdataevent, function() {
           workerdatacallback.apply(workerdatacallback, arguments.concat[send])
         })
-      }
+      })
       continue
     }
 
