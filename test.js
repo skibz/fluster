@@ -4,6 +4,7 @@ var fluster = require('./index')
 fluster({
   cluster: {
     on: {
+      // todo: bind `this` to cluster
       online: function(worker) {
         console.log('worker', worker.id, 'is online')
       },
@@ -15,6 +16,10 @@ fluster({
   workers: {
     limit: 3, // remove this to use a process per core
     exec: 'worker.js',
+    on: {
+      // todo: bind `this` to worker
+      exit: function() {}
+    },
     data: {
       somedata: {
         value: 'abcdefg'
@@ -25,6 +30,8 @@ fluster({
           send({heyo: 'abc'})
         }
       },
+      // todo: support readable streams
+      // todo: test event emitter code
       // baz: {
       //   on: {
       //     data: function(data, send) {
