@@ -26,24 +26,31 @@ module.exports = function (opts) {
     send: {}
   }
 
+  opts.cluster = opts.cluster || {}
+  opts.workers = opts.workers || {}
+
   var cluster = require('cluster')
   var send = clustersend.bind(cluster)
   var backups = clusterbackups.bind(fluster)
 
-  if (opts.cluster.schedulingPolicy) {
-    cluster.schedulingPolicy = opts.cluster.schedulingPolicy || cluster.schedulingPolicy
-  }
-
+  cluster.schedulingPolicy = opts.cluster.schedulingPolicy || cluster.schedulingPolicy
   fluster.env = opts.cluster.env || process.env
 
-  cluster.on('exit', function(worker, code, signal) {
-    cluster.fork(fluster.env).send(backups())
+  if (!opts.workers.exec) throw 'missing worker script'
+
+  cluster.setupMaster({
+    exec: opts.workers.exec
   })
 
-  if (opts.workers.respawn === false) cluster.removeAllListeners('exit')
+  if (opts.workers.respawn === false) {
 
-  var clusterevents = Object.keys(opts.cluster.on)
+  } else {
+    cluster.on('exit', function (worker, code, signal) {
+      cluster.fork(fluster.env).send(backups())
+    })
+  }
 
+  var clusterevents = Object.keys(opts.cluster.on || {})
   for (var clusterevent in clusterevents) {
     cluster.on(
       clusterevents[clusterevent],
@@ -51,7 +58,7 @@ module.exports = function (opts) {
     )
   }
 
-  var workerdata = Object.keys(opts.workers.data)
+  var workerdata = Object.keys(opts.workers.data || {})
   for (var workerdatum in workerdata) {
     var currentworkerdata = opts.workers.data[workerdata[workerdatum]]
 
@@ -97,10 +104,6 @@ module.exports = function (opts) {
     }
   }
 
-  cluster.setupMaster({
-    exec: opts.workers.exec
-  })
-
   if (opts.workers.limit !== 'auto' && !opts.workers.limit) {
     os.cpus().forEach(cluster.fork.bind(cluster, fluster.env))
   } else {
@@ -109,7 +112,17 @@ module.exports = function (opts) {
     }
   }
 
-  send(backups())
+  var workerevents = Object.keys(opts.workers.on || {})
+  Object.keys(cluster.workers).forEach(function(id) {
+    for (var workerevent in workerevents) {
+      cluster.workers[id].on(
+        workerevents[workerevent],
+        opts.workers.on[workerevents[workerevent]]
+      )
+    }
+  })
+
+  if (Object.keys(fluster.send).length) send(backups())
 
   fluster.cluster = cluster;
 
