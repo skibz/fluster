@@ -7,6 +7,7 @@
 var fluster = require('fluster')
 var mycluster = fluster({
   cluster: {
+    // bind arbitrary cluster events
     on: {
       // message
       // online
@@ -18,12 +19,14 @@ var mycluster = fluster({
     }
   },
   workers: {
+    // select a script to clusterise
     exec: 'my-worker.js',
-    respawn: false, // workers respawn with values from `workers.data` by default
-    limit: 5, // omit to scale to your cpu core count
+    // workers respawn with values from `workers.data` by default
+    respawn: false,
+    // omit `workers.limit` to scale to your cpu core count
+    limit: 5,
+    // seed your workers with data at bootstrap (or on a schedule) via ipc
     data: {
-      // seed your workers with data at
-      // bootstrap (or on a schedule) via ipc
       somedata: {
         value: [1, 2, 3, 4, 5, 6]
       },
@@ -31,12 +34,14 @@ var mycluster = fluster({
         every: 1000 * 60 * 60,
         exec: function(send) {
           businesslogic(function(err, res) {
-            this.value = res // store the value for posterity
+            // store the value for posterity
+            this.value = res || this.value
             send(err, res)
           }.bind(this))
         }
       }
     },
+    // bind arbitrary worker events
     on: {
       // message
       // online
