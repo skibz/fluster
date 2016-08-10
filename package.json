@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test",
+    "coverage": "istanbul cover _mocha --report lcovonly -- test -R spec"
   },
   "keywords": [],
   "author": "Ant Cosentino <ant@io.co.za>",
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^3.5.0",
+    "istanbul": "^0.4.4",
     "mocha": "^2.5.3"
   }
 }
