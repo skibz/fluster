@@ -7,6 +7,8 @@ var fluster = require('../')
 
 describe('worker data', function () {
 
+  this.timeout(30000)
+
   it('should send any keyed data with a value property as soon as a worker boots', function (done) {
     var a = 0;
     fluster({

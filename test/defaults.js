@@ -7,6 +7,8 @@ var fluster = require('../')
 
 describe('defaults', function() {
 
+  this.timeout(30000)
+
   it('should create as many workers as there are cpu cores', function() {
     expect(Object.keys(
       fluster({
