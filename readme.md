@@ -1,7 +1,5 @@
 
-# fluster
-
-[![Build Status](https://travis-ci.org/skibz/fluster.svg?branch=master)](https://travis-ci.org/skibz/fluster)
+# fluster [![Build Status](https://travis-ci.org/skibz/fluster.svg?branch=master)](https://travis-ci.org/skibz/fluster)
 
 a simple wrapper for node's cluster module
 schedule any number of threads and seed them with data via ipc at boot or at intervals
