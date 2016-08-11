@@ -27,7 +27,8 @@ var mycluster = fluster({
     respawn: false,
     // omit `workers.limit` to scale to your cpu core count
     limit: 5,
-    data: { // each key in this object will trigger a process#onmessage event in your worker
+    // each key in this object will trigger a process#onmessage event in your worker
+    data: {
       somedata: {
         value: [1, 2, 3, 4, 5, 6]
       },
@@ -41,13 +42,15 @@ var mycluster = fluster({
           }.bind(this))
         }
       },
+      // specify an event emitter and functions for the
+      // events you'd like to use to send data to your workers
       myemitter: {
-        of: getAnEventEmitterSomehow(),
         on: {
           data: function(data) {
             return data.toString('utf8')
           }
-        }
+        },
+        of: getAnEventEmitterSomehow()
       }
     },
     // bind arbitrary worker events
