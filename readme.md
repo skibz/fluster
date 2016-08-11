@@ -42,8 +42,8 @@ var mycluster = fluster({
           }.bind(this))
         }
       },
-      // specify an event emitter and functions for the
-      // events you'd like to use to send data to your workers
+      // specify an event emitter and functions to transform the
+      // data that gets sent to workers when the event is emitted
       myemitter: {
         on: {
           data: function(data) {

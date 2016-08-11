@@ -36,13 +36,17 @@ describe('worker data', function () {
   })
 
   it('should send any data received from a given readable stream', function (done) {
+    var a = 0
     fluster({
       workers: {
         limit: 1,
         exec: 'test/fixtures/worker-data-eventemitter.js',
         on: {
           message: function() {
-            done()
+            if (a === 0) {
+              a += 1
+              return done()
+            }
           }
         },
         respawn: false,
@@ -50,7 +54,8 @@ describe('worker data', function () {
           travis: {
             of: fs.createReadStream(`${__dirname}/../.travis.yml`),
             on: {
-              data: function(data) {
+              data: function(emitter, data) {
+                emitter.removeAllListeners()
                 return data.toString('utf8')
               }
             }

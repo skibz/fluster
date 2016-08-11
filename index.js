@@ -61,14 +61,8 @@ module.exports = function (opts) {
     var currentworkerdata = opts.workers.data[workerdata[workerdatum]]
     var e = currentworkerdata.of
     if (e && currentworkerdata.on) {
-      if (typeof e === 'function') {
-        e = e()
-      }
-
-      if (!(e instanceof events.EventEmitter)) {
-        throw 'non eventemitter value given'
-      }
-
+      if (typeof e === 'function') e = e()
+      if (!(e instanceof events.EventEmitter)) throw 'non eventemitter value given'
       var eventkeys = Object.keys(currentworkerdata.on)
       for (var event in eventkeys) {
         e.on(eventkeys[event], function() {
@@ -76,7 +70,7 @@ module.exports = function (opts) {
           var message = {}
           message[workerdata[workerdatum]] = currentworkerdata.on[eventkeys[event]].apply(
             currentworkerdata.on[eventkeys[event]],
-            arguments
+            [e].concat([].slice.call(arguments))
           )
           send(message)
         })
