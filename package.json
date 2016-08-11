@@ -1,13 +1,13 @@
 {
   "name": "fluster",
   "version": "0.0.12",
-  "description": "",
+  "description": "simplify the use of node's cluster module",
   "main": "index.js",
   "scripts": {
     "test": "mocha test",
     "coverage": "istanbul cover _mocha --report lcovonly -- test -R spec"
   },
-  "keywords": [],
+  "keywords": ["cluster"],
   "author": "Ant Cosentino <ant@io.co.za>",
   "license": "Apache-2.0",
   "devDependencies": {
