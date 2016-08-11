@@ -52,7 +52,7 @@ describe('worker data', function () {
         respawn: false,
         data: {
           travis: {
-            of: fs.createReadStream(`${__dirname}/../.travis.yml`),
+            of: fs.createReadStream(__dirname + '/../.travis.yml'),
             on: {
               data: function(emitter, data) {
                 emitter.removeAllListeners()
