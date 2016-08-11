@@ -1,7 +1,7 @@
 
 # fluster [![Build Status](https://travis-ci.org/skibz/fluster.svg?branch=master)](https://travis-ci.org/skibz/fluster)
 
-fluster is a friendly wrapper for node's cluster module. it allows you to schedule any number of threads and seed them with data via ipc at boot or at intervals.
+fluster is a friendly wrapper for node's [cluster](http://devdocs.io/node-cluster/) module. it allows you to schedule any number of threads and seed them with data via ipc at boot or at intervals.
 
 ##### example
 
