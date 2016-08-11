@@ -12,6 +12,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "^3.5.0",
+    "codeclimate-test-reporter": "^0.3.3",
     "istanbul": "^0.4.4",
     "mocha": "^2.5.3"
   }
