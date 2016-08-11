@@ -40,6 +40,14 @@ var mycluster = fluster({
             send(err, res)
           }.bind(this))
         }
+      },
+      myemitter: {
+        of: getAnEventEmitterSomehow(),
+        on: {
+          data: function(data) {
+            return data.toString('utf8')
+          }
+        }
       }
     },
     // bind arbitrary worker events

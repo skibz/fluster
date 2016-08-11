@@ -1,4 +1,6 @@
+
 var os = require('os')
+var fs = require('fs')
 
 var chai = require('chai')
 var expect = chai.expect
@@ -27,6 +29,31 @@ describe('worker data', function () {
         data: {
           testing: {
             value: '1'
+          }
+        }
+      }
+    })
+  })
+
+  it('should send any data received from a given readable stream', function (done) {
+    fluster({
+      workers: {
+        limit: 1,
+        exec: 'test/fixtures/worker-data-eventemitter.js',
+        on: {
+          message: function() {
+            done()
+          }
+        },
+        respawn: false,
+        data: {
+          travis: {
+            of: fs.createReadStream(`${__dirname}/../.travis.yml`),
+            on: {
+              data: function(data) {
+                return data.toString('utf8')
+              }
+            }
           }
         }
       }

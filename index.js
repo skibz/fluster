@@ -2,6 +2,8 @@
 'use strict';
 
 var os = require('os')
+var stream = require('stream')
+var events = require('events')
 
 function clustersend(message) {
   Object.keys(this.workers).forEach(function(id) {
@@ -57,19 +59,28 @@ module.exports = function (opts) {
   var workerdata = Object.keys(opts.workers.data || {})
   for (var workerdatum in workerdata) {
     var currentworkerdata = opts.workers.data[workerdata[workerdatum]]
+    var e = currentworkerdata.of
+    if (e && currentworkerdata.on) {
+      if (typeof e === 'function') {
+        e = e()
+      }
 
-    // todo: determine if readable stream and pause until workers ready
-    if (currentworkerdata.on) {
-      var workerdataevents = Object.keys(currentworkerdata.on)
-      var ofindex = workerdataevents.indexOf('of')
-      if (ofindex === -1) throw 'missing of arg'
-      workerdataevents.splice(ofindex, 1)
-      workerdataevents.forEach(function(workerdataevent) {
-        var workerdatacallback = currentworkerdata.on[workerdataevent]
-        currentworkerdata.of.on(workerdataevent, function() {
-          workerdatacallback.apply(workerdatacallback, arguments.concat[send])
+      if (!(e instanceof events.EventEmitter)) {
+        throw 'non eventemitter value given'
+      }
+
+      var eventkeys = Object.keys(currentworkerdata.on)
+      for (var event in eventkeys) {
+        e.on(eventkeys[event], function() {
+          // call the given function and send the result to all workers
+          var message = {}
+          message[workerdata[workerdatum]] = currentworkerdata.on[eventkeys[event]].apply(
+            currentworkerdata.on[eventkeys[event]],
+            arguments
+          )
+          send(message)
         })
-      })
+      }
       continue
     }
 
