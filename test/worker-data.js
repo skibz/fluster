@@ -12,15 +12,15 @@ describe('worker data', function () {
   this.timeout(30000)
 
   it('should send any keyed data with a value property as soon as a worker boots', function (done) {
-    var a = 0;
+    var a = false
     fluster({
       workers: {
         limit: 1,
         exec: 'test/fixtures/worker-data.js',
         on: {
           message: function() {
-            if (a === 0) {
-              a += 1
+            if (!a) {
+              a = true
               return done()
             }
           }
@@ -36,15 +36,15 @@ describe('worker data', function () {
   })
 
   it('should send any data received from a given readable stream', function (done) {
-    var a = 0
+    var a = false
     fluster({
       workers: {
         limit: 1,
         exec: 'test/fixtures/worker-data-eventemitter.js',
         on: {
           message: function() {
-            if (a === 0) {
-              a += 1
+            if (!a) {
+              a = true
               return done()
             }
           }
@@ -55,7 +55,6 @@ describe('worker data', function () {
             of: fs.createReadStream(__dirname + '/../.travis.yml'),
             on: {
               data: function(emitter, data) {
-                emitter.removeAllListeners()
                 return data.toString('utf8')
               }
             }

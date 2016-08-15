@@ -10,13 +10,13 @@ describe('event listeners', function () {
   this.timeout(30000)
 
   it('should bind all given events for cluster and worker', function(done) {
-    var a = 0;
+    var a = false
     fluster({
       cluster: {
         on: {
           fork: function() {
-            if (a === 0) {
-              a += 1
+            if (!a) {
+              a = true
               return done()
             }
           }
