@@ -1,44 +1,57 @@
 
-'use strict';
+'use strict'
 
 var os = require('os')
 var stream = require('stream')
 var events = require('events')
 
 function clustersend(message) {
-  Object.keys(this.workers).forEach(function(id) {
-    this.workers[id].send(message);
-  }, this);
+  Object.keys(
+    this.workers
+  ).forEach(function(id) {
+    this.workers[id].send(message)
+  }, this)
 }
 
 function clusterbackups() {
   return Object.keys(
     this.send
   ).map(function(send) {
-    var value = {};
+    var value = {}
     value[send] = this.send[send].value || null
     return value
   }, this)
 }
 
-module.exports = function (opts) {
-  if (typeof opts !== 'object') throw 'args error'
+module.exports = function(opts) {
 
-  var fluster = {
-    send: {}
+  var optstype = typeof opts
+  if (optstype !== 'object') {
+    throw new Error(
+      'expected object type `opts` but got ' +
+      optstype
+    )
   }
+
+  var cluster = require('cluster')
+  var fluster = {send: {}}
+
+  var send = clustersend.bind(cluster)
+  var backups = clusterbackups.bind(fluster)
 
   opts.cluster = opts.cluster || {}
   opts.workers = opts.workers || {}
 
-  var cluster = require('cluster')
-  var send = clustersend.bind(cluster)
-  var backups = clusterbackups.bind(fluster)
-
   cluster.schedulingPolicy = opts.cluster.schedulingPolicy || cluster.schedulingPolicy
   fluster.env = opts.cluster.env || process.env
 
-  if (!opts.workers.exec) throw 'missing worker script'
+  var exectype = typeof opts.workers.exec
+  if (exectype !== 'string') {
+    throw new Error(
+      'expected string type `opts.workers.exec`, but got ' +
+      typeof opts.workers.exec
+    )
+  }
 
   cluster.setupMaster({exec: opts.workers.exec})
 
@@ -48,59 +61,49 @@ module.exports = function (opts) {
     })
   }
 
-  var clusterevents = Object.keys(opts.cluster.on || {})
-  for (var clusterevent in clusterevents) {
-    cluster.on(
-      clusterevents[clusterevent],
-      opts.cluster.on[clusterevents[clusterevent]]
-    )
-  }
+  Object.keys(opts.cluster.on || {}).forEach(function(event) {
+    cluster.on(event, opts.cluster.on[event])
+  })
 
-  var workerdata = Object.keys(opts.workers.data || {})
-  for (var workerdatum in workerdata) {
-    var currentworkerdata = opts.workers.data[workerdata[workerdatum]]
-    var e = currentworkerdata.of
-    if (e && currentworkerdata.on) {
+  Object.keys(opts.workers.data || {}).forEach(function(d) {
+    var currentdata = opts.workers.data[d]
+    var e = currentdata.of
+    if (e && currentdata.on) {
       if (typeof e === 'function') e = e()
-      if (!(e instanceof events.EventEmitter)) throw 'non eventemitter value given'
-      var eventkeys = Object.keys(currentworkerdata.on)
-      for (var event in eventkeys) {
-        e.on(eventkeys[event], function() {
-          // call the given function and send the result to all workers
-          var message = {}
-          message[workerdata[workerdatum]] = currentworkerdata.on[eventkeys[event]].apply(
-            currentworkerdata.on[eventkeys[event]],
+      if (!(e instanceof events.EventEmitter)) {
+        throw new Error('expected an EventEmitter')
+      }
+      Object.keys(currentdata.on).forEach(function(event) {
+        e.on(currentdata.on[event], function() {
+          var msg = {}
+          msg[d] = currentdata.on[event].apply(
+            currentdata.on[event],
             [e].concat([].slice.call(arguments))
           )
-          send(message)
+          send(msg)
         })
-      }
-      continue
+      })
+      return
     }
 
-    fluster.send[workerdata[workerdatum]] = {}
+    fluster.send[d] = {}
 
-    if (currentworkerdata.every) {
-      fluster.send[workerdata[workerdatum]].cleartimer = setInterval(
-        currentworkerdata.exec.bind(
-          fluster.send[workerdata[workerdatum]],
+    if (currentdata.every) {
+      fluster.send[d].cleartimer = setInterval(
+        currentdata.exec.bind(
+          fluster.send[d],
           send
         ),
-        currentworkerdata.every
+        currentdata.every
       )
-      continue
+      return
     }
-
-    if (!currentworkerdata.every) {
-      if (currentworkerdata.exec) {
-        // requiring the caller to mutate `this.value` here is so lame
-        currentworkerdata.exec.call(fluster.send[workerdata[workerdatum]])
-      } else {
-        fluster.send[workerdata[workerdatum]].value = currentworkerdata.value
-      }
-      continue
+    if (currentdata.exec) {
+      currentdata.exec.call(fluster.send[d])
+    } else {
+      fluster.send[d].value = currentdata.value
     }
-  }
+  })
 
   if (opts.workers.limit !== 'auto' && !opts.workers.limit) {
     os.cpus().forEach(cluster.fork.bind(cluster, fluster.env))
@@ -110,14 +113,10 @@ module.exports = function (opts) {
     }
   }
 
-  var workerevents = Object.keys(opts.workers.on || {})
   Object.keys(cluster.workers).forEach(function(id) {
-    for (var workerevent in workerevents) {
-      cluster.workers[id].on(
-        workerevents[workerevent],
-        opts.workers.on[workerevents[workerevent]]
-      )
-    }
+    Object.keys(opts.workers.on || {}).forEach(function(event) {
+      cluster.workers[id].on(event, opts.workers.on[event])
+    })
   })
 
   if (Object.keys(fluster.send).length) send(backups())
